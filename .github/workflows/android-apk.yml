@@ -1,0 +1,49 @@
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Extract BlockVerse source archive
+        run: |
+          test -f BlockVerse-v1.4.0-Full-Source.zip
+          unzip -q BlockVerse-v1.4.0-Full-Source.zip
+          test -f BlockVerse/app/build.gradle.kts
+
+      - name: Run unit tests
+        working-directory: BlockVerse
+        run: gradle --no-daemon testDebugUnitTest
+
+      - name: Build debug APK
+        working-directory: BlockVerse
+        run: gradle --no-daemon assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BlockVerse-1.4.0-debug-apk
+          path: BlockVerse/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
