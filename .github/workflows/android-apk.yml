@@ -26,9 +26,15 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Extract BlockVerse source archive
+      - name: Verify source archive
         run: |
-          test -f BlockVerse-v1.4.0-Full-Source.zip
+          if [ ! -f BlockVerse-v1.4.0-Full-Source.zip ]; then
+            echo "::error::Missing BlockVerse-v1.4.0-Full-Source.zip in repository root."
+            echo "Open Add file > Upload files and upload the ZIP to the root of this repository, then commit to main."
+            echo "Do not upload the ZIP into .github/ or another folder."
+            exit 1
+          fi
+          unzip -t BlockVerse-v1.4.0-Full-Source.zip
           unzip -q BlockVerse-v1.4.0-Full-Source.zip
           test -f BlockVerse/app/build.gradle.kts
 
